@@ -14,7 +14,7 @@ var outport = 7400;
 var MESSAGE_SCHEMA = {
   type: 'object',
   properties: {
-    adress: {
+    address: {
       type: 'string',
       required: true
     },
