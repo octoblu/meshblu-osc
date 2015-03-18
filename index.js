@@ -3,13 +3,6 @@ var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var osc = require('osc');
 
-var inport = 3333;
-var outport = 7400;
-
-
-
-
-
 
 var MESSAGE_SCHEMA = {
   type: 'object',
@@ -19,7 +12,7 @@ var MESSAGE_SCHEMA = {
       required: true
     },
     args: {
-      type: 'string',
+      type: 'array',
       required: true
     }
   }
@@ -28,9 +21,20 @@ var MESSAGE_SCHEMA = {
 var OPTIONS_SCHEMA = {
   type: 'object',
   properties: {
-    firstExampleOption: {
+    ipAddress: {
       type: 'string',
-      required: true
+      required: true,
+      default: '0.0.0.0'
+    },
+    listenPort: {
+      type: 'number',
+      required: true,
+      default: 7400
+    },
+    sendPort: {
+      type: 'number',
+      required: true,
+      default: 3333
     }
   }
 };
@@ -46,21 +50,18 @@ util.inherits(Plugin, EventEmitter);
 
 
 
- var udpPort = new osc.UDPPort({
-    localAddress: "0.0.0.0",
-    localPort: 7400
-});
+ var udpPort;
 
-udpPort.open();
+
 
 Plugin.prototype.onMessage = function(message){
   var payload = message.payload;
-  if(payload.port){ inport = payload.port;}
   if(payload.bundle){
-  udpPort.send(payload.bundle, "127.0.0.1", inport);
+  udpPort.send(payload.bundle);
 }else{
 
-  udpPort.send(payload, "127.0.0.1", inport);  
+  udpPort.send(payload);  
+
 }
   
   };
@@ -69,13 +70,29 @@ Plugin.prototype.onConfig = function(device){
   var self = this;
   this.setOptions(device.options||{});
 
- 
+
+  udpPort = new osc.UDPPort({
+    localAddress: (this.options.ipAddress || "0.0.0.0"),
+    localPort: (this.options.listenPort || 7400),
+    remotePort: (this.options.sendPort || 3333),
+    remoteAddress: "127.0.0.1"
+});
+
+ udpPort.open();
 
 // Listen for incoming OSC bundles.
 udpPort.on("bundle", function (oscBundle) {
     console.log("An OSC bundle just arrived!", oscBundle);
 
       self.emit("message", {devices: ['*'], "payload": oscBundle
+             });
+
+});
+
+//Listen for regular messages
+udpPort.on("message", function (oscMsg) {
+
+      self.emit("message", {devices: ['*'], "payload": oscMsg
              });
 
 });
