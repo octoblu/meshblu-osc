@@ -31,10 +31,15 @@ var OPTIONS_SCHEMA = {
       required: true,
       default: 7400
     },
-    sendPort: {
+    sendToPort: {
       type: 'number',
       required: true,
       default: 3333
+    },
+     sendToIp: {
+      type: 'string',
+      required: true,
+      default: "127.0.0.1"
     }
   }
 };
@@ -74,8 +79,8 @@ Plugin.prototype.onConfig = function(device){
   udpPort = new osc.UDPPort({
     localAddress: (this.options.ipAddress || "0.0.0.0"),
     localPort: (this.options.listenPort || 7400),
-    remotePort: (this.options.sendPort || 3333),
-    remoteAddress: "127.0.0.1"
+    remotePort: (this.options.sendToPort || 3333),
+    remoteAddress: (this.options.sendToIp || "127.0.0.1")
 });
 
  udpPort.open();
