@@ -1,5 +1,11 @@
 ## meshblu-osc
 
+[![Build Status](https://travis-ci.org/octoblu/meshblu-osc.svg?branch=master)](https://travis-ci.org/octoblu/meshblu-osc)
+[![Code Climate](https://codeclimate.com/github/octoblu/meshblu-osc/badges/gpa.svg)](https://codeclimate.com/github/octoblu/meshblu-osc)
+[![Test Coverage](https://codeclimate.com/github/octoblu/meshblu-osc/badges/coverage.svg)](https://codeclimate.com/github/octoblu/meshblu-osc)
+[![npm version](https://badge.fury.io/js/meshblu-osc.svg)](http://badge.fury.io/js/meshblu-osc)
+[![Gitter](https://badges.gitter.im/octoblu/help.svg)](https://gitter.im/octoblu/help)
+
 A Meshblu connector for use in Octoblu or with other services.
 
 ### Setup Instructions
