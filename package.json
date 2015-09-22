@@ -1,13 +1,41 @@
 {
   "name": "meshblu-osc",
-  "version": "1.0.1",
+  "repository": "octoblu/meshblu-osc",
+  "version": "1.1.0",
+  "main": "connector.js",
   "scripts": {
-    "start": "node command.js"
+    "preinstall": "node -e \"try{require('./skip-install.js')}catch(e){}\"",
+    "start": "node command.js",
+    "test": "exit 0"
   },
   "dependencies": {
-    "meshblu": "^1.9.0",
-    "osc" : "*"
+    "debug": "^2.1.0",
+    "lodash": "^3.10.1",
+    "meshblu": "^1.30.1",
+    "osc": "^1.3.0"
   },
+  "bundledDependencies": [
+    "request",
+    "tar",
+    "fstream"
+  ],
+  "platformDependencies": {
+    "darwin": [
+      "xcode"
+    ],
+    "win32": [
+      "Python 2.7",
+      "Visual Studio (Express)"
+    ],
+    "win64": [
+      "Python 2.7",
+      "Visual Studio (Express)"
+    ],
+    "linux": [],
+    "android": null,
+    "ios": null
+  },
+  "license": "MIT",
   "keywords": [
     "meshblu-connector",
     "gateblu"

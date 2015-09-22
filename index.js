@@ -1,8 +1,9 @@
 'use strict';
-var util = require('util');
+var _            = require('lodash');
+var util         = require('util');
+var osc          = require('osc');
 var EventEmitter = require('events').EventEmitter;
-var osc = require('osc');
-
+var debug        = require('debug')('meshblu-osc');
 
 var MESSAGE_SCHEMA = {
   type: 'object',
@@ -39,78 +40,75 @@ var OPTIONS_SCHEMA = {
      sendToIp: {
       type: 'string',
       required: true,
-      default: "127.0.0.1"
+      default: '127.0.0.1'
     }
   }
 };
 
 function Plugin(){
-  this.options = {};
-  this.messageSchema = MESSAGE_SCHEMA;
-  this.optionsSchema = OPTIONS_SCHEMA;
-  return this;
+  var self = this;
+  self.options = {};
+  self.messageSchema = MESSAGE_SCHEMA;
+  self.optionsSchema = OPTIONS_SCHEMA;
+  return self;
 }
 util.inherits(Plugin, EventEmitter);
 
-
-
-
- var udpPort;
-
-
-
 Plugin.prototype.onMessage = function(message){
-  var payload = message.payload;
+  var self = this;
+
+  var payload = message.payload || {};
+  debug('onMessage', payload);
+  if(self.updPort){
+    self.connectToUdp(self.options);
+  }
+
   if(payload.bundle){
-  udpPort.send(payload.bundle);
-}else{
-
-  udpPort.send(payload);  
-
-}
-  
-  };
+    self.udpPort.send(payload.bundle);
+  }else{
+    self.udpPort.send(payload);
+  }
+};
 
 Plugin.prototype.onConfig = function(device){
   var self = this;
-  this.setOptions(device.options||{});
+  debug('on config');
+  self.setOptions(device.options);
+  if(self.udpPort){
+    debug('already connected to udp, clearing and trying again');
+    self.udpPort.close()
+    self.udpPort = null;
+  }
+  self.connectToUdp(self.options);
+};
 
+Plugin.prototype.connectToUdp = function(options){
+  var self = this;
+  debug('connecting to udp');
+  self.udpPort = new osc.UDPPort(options);
+  self.udpPort.open();
+  // Listen for incoming OSC bundles.
+  self.udpPort.on('bundle', function (oscBundle) {
+    debug('an osc bundle just arrived!', oscBundle);
+    self.emit('message', {devices: ['*'], payload: oscBundle});
+  });
 
-  udpPort = new osc.UDPPort({
-    localAddress: (this.options.ipAddress || "0.0.0.0"),
-    localPort: (this.options.listenPort || 7400),
-    remotePort: (this.options.sendToPort || 3333),
-    remoteAddress: (this.options.sendToIp || "127.0.0.1")
-});
-
- udpPort.open();
-
-// Listen for incoming OSC bundles.
-udpPort.on("bundle", function (oscBundle) {
-    console.log("An OSC bundle just arrived!", oscBundle);
-
-      self.emit("message", {devices: ['*'], "payload": oscBundle
-             });
-
-});
-
-//Listen for regular messages
-udpPort.on("message", function (oscMsg) {
-
-      self.emit("message", {devices: ['*'], "payload": oscMsg
-             });
-
-});
-
-// Open the socket.
-
-
-    
-
+  //Listen for regular messages
+  self.udpPort.on('message', function (oscMsg) {
+    debug('an osc message just arrived!', oscMsg);
+    self.emit('message', {devices: ['*'], 'payload': oscMsg});
+  });
 };
 
 Plugin.prototype.setOptions = function(options){
-  this.options = options;
+  var self = this;
+  self.options = _.defaults(options, {
+    ipAddress: '0.0.0.0',
+    listenPort: 7400,
+    sendToPort: 3333,
+    sendToIp: '127.0.0.1'
+  });
+  debug('set options', self.options);
 };
 
 module.exports = {
