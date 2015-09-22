@@ -1,7 +1,7 @@
 {
   "name": "meshblu-osc",
   "repository": "octoblu/meshblu-osc",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "connector.js",
   "scripts": {
     "preinstall": "node -e \"try{require('./skip-install.js')}catch(e){}\"",
