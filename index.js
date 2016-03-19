@@ -6,15 +6,21 @@ var EventEmitter = require('events').EventEmitter;
 var debug        = require('debug')('meshblu-osc');
 
 var MESSAGE_SCHEMA = {
-  type: 'object',
+  type: "object",
   properties: {
     address: {
-      type: 'string',
+      type: "string",
       required: true
     },
+    number: {
+      type: 'boolean',
+      title: 'Is this a number?'
+    },
     args: {
-      type: 'array',
-      required: true
+      type: "array",
+      items: {
+        type: "string"
+      }
     }
   }
 };
@@ -58,6 +64,13 @@ Plugin.prototype.onMessage = function(message){
   var self = this;
 
   var payload = message.payload || {};
+  if(payload.number == true){
+    var args = []
+    payload.args.forEach(function(val){
+      args.push(parseInt(val));
+    });
+    payload.args = args;
+  }
   debug('onMessage', payload);
   if(self.updPort){
     self.connectToUdp(self.options);
@@ -85,6 +98,12 @@ Plugin.prototype.onConfig = function(device){
 Plugin.prototype.connectToUdp = function(options){
   var self = this;
   debug('connecting to udp');
+  options = {
+    localAddress: options.ipAddress,
+    remoteAddress: options.sendToIp,
+    localPort: options.listenPort,
+    remotePort: options.sendToPort
+  };
   self.udpPort = new osc.UDPPort(options);
   self.udpPort.open();
   // Listen for incoming OSC bundles.
